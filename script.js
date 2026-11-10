@@ -1,11 +1,12 @@
 /* ===== Configuração ===== */
 const CONFIG={
-  checkoutUrl:'',               // link do checkout principal (manual R$ 37) — preencha em config.json
+  checkoutUrl:'https://pay.kiwify.com.br/uoR7FrU',     // checkout do manual R$ 37
+  mentorshipUrl:'https://pay.kiwify.com.br/7h10JXu',   // checkout da mentoria R$ 497
   whatsapp:'5522998250466',
   supabaseUrl:'https://lpxyezpikhixcclocsjy.supabase.co',
   supabaseKey:'sb_publishable_-sxqKfRj3RvJdqJAMHdknQ_UYp-TgYf'
 };
-fetch('config.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).then(c=>{if(c.checkoutUrl)CONFIG.checkoutUrl=c.checkoutUrl;if(c.whatsapp)CONFIG.whatsapp=String(c.whatsapp).replace(/\D/g,'')}).catch(()=>{});
+fetch('config.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).then(c=>{if(c.checkoutUrl)CONFIG.checkoutUrl=c.checkoutUrl;if(c.mentorshipUrl)CONFIG.mentorshipUrl=c.mentorshipUrl;if(c.whatsapp)CONFIG.whatsapp=String(c.whatsapp).replace(/\D/g,'')}).catch(()=>{});
 
 const $=id=>document.getElementById(id);
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -71,12 +72,16 @@ $('privacy-overlay').onclick=e=>{if(e.target===$('privacy-overlay'))closePrivacy
 $('year').textContent=new Date().getFullYear();
 
 /* ===== Checkout e WhatsApp ===== */
+function track(ev,data){try{if(window.fbq)fbq('track',ev,data)}catch(e){}}
+function checkoutLink(base){const u=new URL(base);const p=new URLSearchParams(location.search);['utm_source','utm_medium','utm_campaign','utm_content','utm_term','src','sck'].forEach(k=>{if(p.get(k)&&!u.searchParams.get(k))u.searchParams.set(k,p.get(k))});if(answers.name&&!u.searchParams.get('name'))u.searchParams.set('name',answers.name);if(answers.email&&!u.searchParams.get('email'))u.searchParams.set('email',answers.email);if(answers.phone&&!u.searchParams.get('phone'))u.searchParams.set('phone',answers.phone.replace(/\D/g,''));return u.toString()}
+function goMentor(){track('InitiateCheckout',{content_name:'Acompanhamento individual',value:497,currency:'BRL'});window.location.assign(checkoutLink(CONFIG.mentorshipUrl))}
 function goCheckout(){
-  if(CONFIG.checkoutUrl){const u=new URL(CONFIG.checkoutUrl);const p=new URLSearchParams(location.search);['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>{if(p.get(k)&&!u.searchParams.get(k))u.searchParams.set(k,p.get(k))});if(answers.email&&!u.searchParams.get('email'))u.searchParams.set('email',answers.email);if(answers.name&&!u.searchParams.get('name'))u.searchParams.set('name',answers.name);window.location.assign(u.toString());return}
+  if(CONFIG.checkoutUrl){track('InitiateCheckout',{content_name:'Manual do Zero aos Primeiros Clientes com IA',value:37,currency:'BRL'});window.location.assign(checkoutLink(CONFIG.checkoutUrl));return}
   window.open(waLink(`Olá, Luan! ${answers.name?`Sou ${answers.name}. `:''}Quero garantir o Manual do Zero aos Primeiros Clientes com IA por R$ 37 na condição de Black Friday.`),'_blank','noopener');
 }
 function mentorMessage(){return `Olá, Luan! ${answers.name?`Sou ${answers.name}. `:''}${result?`Fiz o diagnóstico e minha cor foi ${result.color.name}. `:''}Quero falar sobre o acompanhamento individual e manter a condição da Black Friday.`}
-document.getElementById('mentor-cta')?.addEventListener('click',()=>window.open(waLink(mentorMessage()),'_blank','noopener'));
+document.getElementById('mentor-cta')?.addEventListener('click',goMentor);
+document.getElementById('mentor-wa')?.addEventListener('click',()=>track('Contact'));
 
 /* ===== Render ===== */
 function setError(t){const n=$('step-error');if(n)n.textContent=t}
@@ -105,7 +110,7 @@ function render(){
   if(step.type==='text'){$('next-text').onclick=()=>{const t=$('answer-text').value.trim();if(t.length<3){setError('Escreva pelo menos algumas palavras.');return}answers.blocker=t;advance()}}
   if(step.type==='contact'){const ph=$('lead-phone');ph.addEventListener('input',()=>{ph.value=maskPhone(ph.value)});$('inline-privacy').onclick=e=>{e.preventDefault();openPrivacy()};$('contact-form').onsubmit=submitLead}
   if(step.type==='result'){
-    $('res-checkout').onclick=goCheckout;$('res-checkout-2').onclick=goCheckout;
+    $('res-checkout').onclick=goCheckout;$('res-checkout-2').onclick=goCheckout;$('res-mentor').onclick=goMentor;$('res-wa').onclick=()=>track('Contact');
     requestAnimationFrame(()=>setTimeout(()=>{const m=$('thermo-marker');if(m)m.style.left=m.dataset.pos},120));
   }
 }
@@ -135,9 +140,10 @@ function resultHTML(){
   <div class="rec rec-mentor">
     <span class="rec-flag alt">PARA ACELERAR AINDA MAIS</span>
     <h3>Acompanhamento individual com o Luan</h3>
-    <p>Uma reunião por semana comigo para revisar metas, ajustar sua oferta e definir os próximos passos junto com você. Fale direto comigo no WhatsApp e garanta a condição da Black Friday.</p>
+    <p>Uma reunião por semana comigo para revisar metas, ajustar sua oferta e definir os próximos passos junto com você. Garanta a condição da Black Friday agora ou tire suas dúvidas direto comigo no WhatsApp.</p>
     <div class="rec-price small"><span>R$</span><strong>497</strong></div>
-    <a class="btn btn-wa btn-block" href="${waLink(mentorMessage())}" target="_blank" rel="noopener"><i class="wa-dot"></i><span>Falar com o Luan no WhatsApp</span></a>
+    <button class="btn btn-primary btn-block" id="res-mentor"><span>Quero o acompanhamento</span><i class="btn-orb"></i></button>
+    <a class="btn btn-wa btn-block" id="res-wa" href="${waLink(mentorMessage())}" target="_blank" rel="noopener"><i class="wa-dot"></i><span>Tirar dúvidas com o Luan no WhatsApp</span></a>
   </div>
   <button class="btn btn-ghost btn-block" id="res-checkout-2"><span>Começar agora pelo manual</span></button>
   <p class="quiz-note">Diagnóstico educativo. Resultados dependem da sua execução e não há promessa de ganhos.</p>

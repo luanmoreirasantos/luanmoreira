@@ -16,9 +16,9 @@ Os cadastros são gravados no Supabase (projeto `lpxyezpikhixcclocsjy`), tabela 
 ## Configurar o checkout
 Edite `config.json`:
 ```json
-{ "checkoutUrl": "https://pay.hotmart.com/SEU-LINK", "whatsapp": "5522998250466" }
+{ "checkoutUrl": "https://pay.kiwify.com.br/uoR7FrU", "mentorshipUrl": "https://pay.kiwify.com.br/7h10JXu", "whatsapp": "5522998250466" }
 ```
-Enquanto `checkoutUrl` estiver vazio, os botões do manual abrem o WhatsApp com mensagem pronta.
+`mentorshipUrl` é o checkout da mentoria (R$ 497). O Pixel Meta 1098029316394490 dispara PageView, Lead (fim do quiz), InitiateCheckout (cliques nos checkouts) e Contact (cliques no WhatsApp).
 
 ## Trocar a senha do painel
 No SQL Editor do Supabase:
