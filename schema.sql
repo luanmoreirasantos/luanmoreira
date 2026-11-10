@@ -1,0 +1,3 @@
+-- Estrutura já aplicada no Supabase (migração luan_bf_leads_quiz).
+-- Tabelas: public.luan_bf_leads, public.luan_bf_admin, public.luan_bf_admin_attempts (RLS ativo, sem acesso direto público).
+-- Funções públicas: luan_bf_submit_lead(p jsonb), luan_bf_admin_list(p_pass text), luan_bf_admin_delete(p_pass text, p_id uuid).
